@@ -2,18 +2,21 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
-import { Building2, Heart, Palette, Dumbbell, Music, Camera, Book, LogOut } from "lucide-react";
+import { Building2, LogOut } from "lucide-react";
 import { CompanyCard } from "@/components/CompanyCard";
 import { CommunityCard } from "@/components/CommunityCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useCommunities } from "@/hooks/useCommunities";
 
 const Index = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  const { data: communities, isLoading: communitiesLoading } = useCommunities(user?.id);
 
   useEffect(() => {
     // Check authentication
@@ -49,7 +52,7 @@ const Index = () => {
     });
   };
 
-  if (loading) {
+  if (loading || communitiesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Loading...</div>
@@ -130,57 +133,6 @@ const Index = () => {
     },
   ];
 
-  const communities = [
-    {
-      id: "c1",
-      name: "Photography Club",
-      description: "Capture moments and share your passion for photography with fellow enthusiasts",
-      icon: Camera,
-      memberCount: 234,
-      color: "from-purple-500 to-pink-500",
-    },
-    {
-      id: "c2",
-      name: "Fitness & Wellness",
-      description: "Stay active and healthy together with workout tips and motivation",
-      icon: Dumbbell,
-      memberCount: 567,
-      color: "from-green-500 to-emerald-500",
-    },
-    {
-      id: "c3",
-      name: "Music Lovers",
-      description: "Share your favorite tunes and discover new music from around the world",
-      icon: Music,
-      memberCount: 892,
-      color: "from-blue-500 to-cyan-500",
-    },
-    {
-      id: "c4",
-      name: "Art & Design",
-      description: "Express your creativity and get inspired by amazing artworks",
-      icon: Palette,
-      memberCount: 445,
-      color: "from-orange-500 to-red-500",
-    },
-    {
-      id: "c5",
-      name: "Book Club",
-      description: "Discuss your favorite books and discover new literary adventures",
-      icon: Book,
-      memberCount: 321,
-      color: "from-indigo-500 to-purple-500",
-    },
-    {
-      id: "c6",
-      name: "Volunteer Network",
-      description: "Make a difference in your community through volunteer opportunities",
-      icon: Heart,
-      memberCount: 178,
-      color: "from-pink-500 to-rose-500",
-    },
-  ];
-
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -230,8 +182,8 @@ const Index = () => {
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-              {communities.map((community) => (
-                <CommunityCard key={community.id} community={community} />
+              {communities?.map((community) => (
+                <CommunityCard key={community.id} community={community} userId={user.id} />
               ))}
             </div>
           </TabsContent>
