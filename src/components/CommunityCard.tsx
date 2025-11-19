@@ -1,24 +1,47 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users } from "lucide-react";
-import { LucideIcon } from "lucide-react";
+import { Users, Camera, Dumbbell, Music, Palette, Book, Heart } from "lucide-react";
+import { useJoinCommunity, useLeaveCommunity } from "@/hooks/useCommunities";
 
 interface Community {
   id: string;
   name: string;
   description: string;
-  icon: LucideIcon;
-  memberCount: number;
+  icon: string;
   color: string;
+  member_count?: number;
+  is_member?: boolean;
 }
 
 interface CommunityCardProps {
   community: Community;
+  userId: string;
 }
 
-export const CommunityCard = ({ community }: CommunityCardProps) => {
-  const Icon = community.icon;
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  Camera,
+  Dumbbell,
+  Music,
+  Palette,
+  Book,
+  Heart,
+};
+
+export const CommunityCard = ({ community, userId }: CommunityCardProps) => {
+  const joinMutation = useJoinCommunity();
+  const leaveMutation = useLeaveCommunity();
+  
+  const Icon = iconMap[community.icon] || Camera;
+  const isLoading = joinMutation.isPending || leaveMutation.isPending;
+
+  const handleToggleMembership = () => {
+    if (community.is_member) {
+      leaveMutation.mutate({ communityId: community.id, userId });
+    } else {
+      joinMutation.mutate({ communityId: community.id, userId });
+    }
+  };
 
   return (
     <Card className="overflow-hidden hover:shadow-[var(--shadow-medium)] transition-all group">
@@ -29,13 +52,20 @@ export const CommunityCard = ({ community }: CommunityCardProps) => {
           </div>
           <Badge variant="secondary" className="bg-muted">
             <Users className="h-3 w-3 mr-1" />
-            {community.memberCount}
+            {community.member_count || 0}
           </Badge>
         </div>
         <h3 className="text-xl font-bold text-foreground mb-2">{community.name}</h3>
         <p className="text-muted-foreground text-sm mb-4">{community.description}</p>
-        <Button variant="outline" className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-          Join Community
+        <Button
+          variant={community.is_member ? "secondary" : "outline"}
+          className={`w-full transition-colors ${
+            !community.is_member && "group-hover:bg-primary group-hover:text-primary-foreground"
+          }`}
+          onClick={handleToggleMembership}
+          disabled={isLoading}
+        >
+          {isLoading ? "..." : community.is_member ? "Leave Community" : "Join Community"}
         </Button>
       </div>
     </Card>
