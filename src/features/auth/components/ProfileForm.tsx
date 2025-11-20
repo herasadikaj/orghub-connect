@@ -11,7 +11,7 @@ import { useEffect } from 'react';
 import type { User } from '../types';
 
 interface ProfileFormProps {
-    user: User;
+    user?: User;
 }
 
 export default function ProfileForm({ user }: ProfileFormProps) {
@@ -20,22 +20,24 @@ export default function ProfileForm({ user }: ProfileFormProps) {
     const { register, handleSubmit, reset, formState: { errors } } = useForm<UpdateProfileInput>({
         resolver: zodResolver(profileSchema),
         defaultValues: {
-            name: user.name || '',
-            email: user.email || '',
+            name: user?.name || '',
+            email: user?.email || '',
         },
     });
 
     useEffect(() => {
-        reset({
-            name: user.name || '',
-            email: user.email || '',
-        });
+        if (user) {
+            reset({
+                name: user.name || '',
+                email: user.email || '',
+            });
+        }
     }, [user, reset]);
 
     const onSubmit = (data: UpdateProfileInput) => {
         const updates: { name?: string; email?: string } = {};
-        if (data.name && data.name !== user.name) updates.name = data.name;
-        if (data.email && data.email !== user.email) updates.email = data.email;
+        if (data.name && data.name !== user?.name) updates.name = data.name;
+        if (data.email && data.email !== user?.email) updates.email = data.email;
 
         if (Object.keys(updates).length > 0) {
             updateProfile(updates);

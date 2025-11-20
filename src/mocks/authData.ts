@@ -42,6 +42,15 @@ export const defaultTestAuthResponse: AuthResponse = mockAuthResponses[0];
  */
 export const mockCredentials = [
   {
+    email: 'o.merxira@teamsystem.com',
+    password: 'Password12',
+    response: {
+      userId: 100,
+      email: 'o.merxira@teamsystem.com',
+      token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMDAiLCJlbWFpbCI6Im8ubWVyeGlyYUB0ZWFtc3lzdGVtLmNvbSIsImlhdCI6MTcwMDQ4MzIwMCwiZXhwIjoxNzAwNTY5NjAwfQ.mock_token_merxira',
+    },
+  },
+  {
     email: 'john.doe@example.com',
     password: 'Password123',
     response: mockAuthResponses[0],

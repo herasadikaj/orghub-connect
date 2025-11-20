@@ -12,7 +12,7 @@ export default function Signup() {
                         <Building2 className="h-12 w-12 text-primary" />
                     </div>
                     <CardTitle className="text-2xl">Create Your Account</CardTitle>
-                    <CardDescription>Join OrgConnect to get started</CardDescription>
+                    <CardDescription>Join TeamConnect to get started</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <SignupForm />

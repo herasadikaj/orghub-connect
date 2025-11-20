@@ -11,7 +11,7 @@ const Auth = () => {
           <div className="flex justify-center mb-4">
             <Building2 className="h-12 w-12 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Welcome to OrgConnect</CardTitle>
+          <CardTitle className="text-2xl">Welcome to TeamConnect</CardTitle>
           <CardDescription>Sign in to access your account</CardDescription>
         </CardHeader>
         <CardContent>

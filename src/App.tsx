@@ -43,9 +43,9 @@ const App = () => (
             <Route
               path="/profile"
               element={
-                <AuthErrorBoundary>
-                  <Profile />
-                </AuthErrorBoundary>
+                // <AuthErrorBoundary>
+                <Profile />
+                // </AuthErrorBoundary>
               }
             />
             <Route path="/login-error" element={<LoginError />} />

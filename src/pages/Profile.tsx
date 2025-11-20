@@ -22,32 +22,6 @@ export default function Profile() {
         );
     }
 
-    if (error || !user) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-accent/10 p-4">
-                <Card className="w-full max-w-md">
-                    <CardHeader>
-                        <CardTitle>Error Loading Profile</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <Alert variant="destructive">
-                            <AlertCircle className="h-4 w-4" />
-                            <AlertDescription>
-                                {error?.message || 'Unable to load profile data'}
-                            </AlertDescription>
-                        </Alert>
-                        <Button asChild variant="outline" className="w-full">
-                            <Link to="/">
-                                <ArrowLeft className="mr-2 h-4 w-4" />
-                                Back to Home
-                            </Link>
-                        </Button>
-                    </CardContent>
-                </Card>
-            </div>
-        );
-    }
-
     return (
         <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 p-4">
             <div className="container mx-auto max-w-2xl py-8">
@@ -70,26 +44,28 @@ export default function Profile() {
                         <CardDescription>View and edit your account information</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        <div className="space-y-4">
-                            <div className="flex flex-col gap-1">
-                                <span className="text-sm font-medium text-muted-foreground">User ID</span>
-                                <span className="text-sm font-mono">{user.userId}</span>
-                            </div>
-                            <div className="flex flex-col gap-1">
-                                <span className="text-sm font-medium text-muted-foreground">Current Email</span>
-                                <span className="text-sm">{user.email}</span>
-                            </div>
-                            {user.name && (
+                        {user ? (
+                            <div className="space-y-4">
                                 <div className="flex flex-col gap-1">
-                                    <span className="text-sm font-medium text-muted-foreground">Current Name</span>
-                                    <span className="text-sm">{user.name}</span>
+                                    <span className="text-sm font-medium text-muted-foreground">User ID</span>
+                                    <span className="text-sm font-mono">{user.userId}</span>
                                 </div>
-                            )}
-                        </div>
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-sm font-medium text-muted-foreground">Current Email</span>
+                                    <span className="text-sm">{user.email}</span>
+                                </div>
+                                {user.name && (
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-sm font-medium text-muted-foreground">Current Name</span>
+                                        <span className="text-sm">{user.name}</span>
+                                    </div>
+                                )}
+                            </div>
+                        ) : null}
 
-                        <div className="border-t pt-6">
+                        <div className={user ? "border-t pt-6" : ""}>
                             <h3 className="text-lg font-semibold mb-4">Edit Profile</h3>
-                            <ProfileForm user={user} />
+                            <ProfileForm user={user || undefined} />
                         </div>
                     </CardContent>
                 </Card>
