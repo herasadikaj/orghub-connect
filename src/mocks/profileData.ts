@@ -6,6 +6,13 @@ import type { User } from '@/features/auth/types';
 
 export const mockProfiles: User[] = [
   {
+    userId: 100,
+    email: 'o.merxira@teamsystem.com',
+    name: 'Olken Merxira',
+    createdAt: '2024-11-20T08:00:00Z',
+    updatedAt: '2024-11-20T15:30:00Z',
+  },
+  {
     userId: 1,
     email: 'john.doe@example.com',
     name: 'John Doe',
@@ -150,13 +157,7 @@ export const mockProfiles: User[] = [
 /**
  * Default test profile for quick testing
  */
-export const defaultTestProfile: User = {
-  userId: 100,
-  email: 'o.merxira@teamsystem.com',
-  name: 'Orges Merxira',
-  createdAt: '2024-11-20T08:00:00Z',
-  updatedAt: '2024-11-20T15:30:00Z',
-};
+export const defaultTestProfile: User = mockProfiles[0];
 
 /**
  * Profile without optional name field

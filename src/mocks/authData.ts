@@ -43,7 +43,7 @@ export const defaultTestAuthResponse: AuthResponse = mockAuthResponses[0];
 export const mockCredentials = [
   {
     email: 'o.merxira@teamsystem.com',
-    password: 'Password12',
+    password: 'Pa$$w0rd',
     response: {
       userId: 100,
       email: 'o.merxira@teamsystem.com',
@@ -75,6 +75,7 @@ export const mockCredentials = [
     password: 'brownD2024!',
     response: mockAuthResponses[4],
   },
+  
 ];
 
 /**
