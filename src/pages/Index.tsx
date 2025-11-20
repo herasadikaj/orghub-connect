@@ -33,7 +33,7 @@ const Index = () => {
   const companies = [
     {
       id: "1",
-      name: "TechCorp Solutions",
+      name: "TeamSystem Tirana",
       description: "Leading technology solutions provider specializing in enterprise software",
       businessUnits: [
         {
@@ -77,7 +77,7 @@ const Index = () => {
     },
     {
       id: "2",
-      name: "InnovateLabs",
+      name: "TeamSystem Italy",
       description: "Research and development company focused on AI and machine learning",
       businessUnits: [
         {
@@ -107,7 +107,7 @@ const Index = () => {
           <div className="flex items-center gap-3">
             <Building2 className="h-8 w-8 text-primary" />
             <div>
-              <h1 className="text-2xl font-bold text-foreground">OrgConnect</h1>
+              <h1 className="text-2xl font-bold text-foreground">TeamConnect</h1>
               <p className="text-sm text-muted-foreground">Connect with your organization and community</p>
             </div>
           </div>
