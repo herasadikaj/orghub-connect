@@ -1,0 +1,161 @@
+openapi: 3.0.3
+info:
+  title: Authentication API - Get Profile
+  description: Retrieve authenticated user's profile information
+  version: 1.0.0
+
+paths:
+  /api/profile:
+    get:
+      summary: Get current user profile
+      description: |
+        Retrieves the authenticated user's profile information.
+        Requires valid JWT token in Authorization header.
+        
+        **Functional Requirements**:
+        - FR-019: System MUST provide a Profile button on the Home page for authenticated users
+        - FR-020: System MUST display user information (email) on the Profile page
+        - FR-022: System MUST prevent direct access to Profile page for unauthenticated users
+        
+        **Behavior**:
+        - On success: Returns user profile data
+        - On missing/invalid token: Returns 401 unauthorized
+        - On expired token: Returns 401 with token expired message
+        
+      operationId: getProfile
+      tags:
+        - Profile
+      
+      security:
+        - BearerAuth: []
+      
+      responses:
+        '200':
+          description: Profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                userProfile:
+                  summary: User profile with all fields
+                  value:
+                    id: "123e4567-e89b-12d3-a456-426614174000"
+                    email: user@example.com
+                    name: John Doe
+                    createdAt: "2025-01-15T10:30:00Z"
+                    updatedAt: "2025-11-20T08:45:00Z"
+                minimalProfile:
+                  summary: User profile with minimal fields
+                  value:
+                    id: "123e4567-e89b-12d3-a456-426614174000"
+                    email: user@example.com
+                    createdAt: "2025-01-15T10:30:00Z"
+        
+        '401':
+          description: Unauthorized - missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingToken:
+                  summary: No authorization token provided
+                  value:
+                    message: "Authorization token is required"
+                    code: "MISSING_TOKEN"
+                invalidToken:
+                  summary: Token is invalid or malformed
+                  value:
+                    message: "Invalid authorization token"
+                    code: "INVALID_TOKEN"
+                expiredToken:
+                  summary: Token has expired
+                  value:
+                    message: "Authorization token has expired"
+                    code: "TOKEN_EXPIRED"
+        
+        '404':
+          description: User not found (shouldn't happen if token is valid)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                userNotFound:
+                  summary: User account not found
+                  value:
+                    message: "User not found"
+                    code: "USER_NOT_FOUND"
+        
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  summary: Server error
+                  value:
+                    message: "An error occurred while fetching profile"
+                    code: "INTERNAL_ERROR"
+
+components:
+  schemas:
+    User:
+      type: object
+      required:
+        - id
+        - email
+      properties:
+        id:
+          type: string
+          description: Unique user identifier
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        email:
+          type: string
+          format: email
+          description: User's email address
+          example: user@example.com
+        name:
+          type: string
+          description: User's display name
+          example: John Doe
+        createdAt:
+          type: string
+          format: date-time
+          description: Account creation timestamp
+          example: "2025-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last profile update timestamp
+          example: "2025-11-20T08:45:00Z"
+    
+    ErrorResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Authorization token is required"
+        code:
+          type: string
+          description: Machine-readable error code
+          example: "MISSING_TOKEN"
+        field:
+          type: string
+          description: Field name for validation errors (not applicable for auth errors)
+          example: null
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT token obtained from login or signup endpoint.
+        Include in header as: `Authorization: Bearer <token>`

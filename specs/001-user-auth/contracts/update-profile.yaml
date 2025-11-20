@@ -1,0 +1,215 @@
+openapi: 3.0.3
+info:
+  title: Authentication API - Update Profile
+  description: Update authenticated user's profile information
+  version: 1.0.0
+
+paths:
+  /api/profile:
+    put:
+      summary: Update current user profile
+      description: |
+        Updates the authenticated user's profile information.
+        Requires valid JWT token in Authorization header.
+        
+        **Functional Requirements**:
+        - User requirement: Editable profile
+        - At least one field must be provided for update
+        - Email changes may require re-verification (backend decision)
+        
+        **Behavior**:
+        - On success: Returns updated user profile
+        - On missing/invalid token: Returns 401 unauthorized
+        - On validation error: Returns 400 with field-specific errors
+        - On duplicate email: Returns 409 conflict (if email changed to existing one)
+        
+      operationId: updateProfile
+      tags:
+        - Profile
+      
+      security:
+        - BearerAuth: []
+      
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              minProperties: 1
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  description: Updated display name
+                  example: Jane Smith
+                email:
+                  type: string
+                  format: email
+                  description: Updated email address (must be unique)
+                  example: newemail@example.com
+            examples:
+              updateName:
+                summary: Update name only
+                value:
+                  name: Jane Smith
+              updateEmail:
+                summary: Update email only
+                value:
+                  email: newemail@example.com
+              updateBoth:
+                summary: Update name and email
+                value:
+                  name: Jane Smith
+                  email: newemail@example.com
+      
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                updatedProfile:
+                  summary: Successfully updated profile
+                  value:
+                    id: "123e4567-e89b-12d3-a456-426614174000"
+                    email: newemail@example.com
+                    name: Jane Smith
+                    createdAt: "2025-01-15T10:30:00Z"
+                    updatedAt: "2025-11-20T14:22:00Z"
+        
+        '400':
+          description: Bad request - validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                noFields:
+                  summary: No fields provided for update
+                  value:
+                    message: "At least one field must be provided"
+                    code: "VALIDATION_ERROR"
+                invalidEmail:
+                  summary: Invalid email format
+                  value:
+                    message: "Invalid email address"
+                    code: "VALIDATION_ERROR"
+                    field: "email"
+                shortName:
+                  summary: Name too short
+                  value:
+                    message: "Name must be at least 2 characters"
+                    code: "VALIDATION_ERROR"
+                    field: "name"
+        
+        '401':
+          description: Unauthorized - missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingToken:
+                  summary: No authorization token provided
+                  value:
+                    message: "Authorization token is required"
+                    code: "MISSING_TOKEN"
+                invalidToken:
+                  summary: Token is invalid or malformed
+                  value:
+                    message: "Invalid authorization token"
+                    code: "INVALID_TOKEN"
+                expiredToken:
+                  summary: Token has expired
+                  value:
+                    message: "Authorization token has expired"
+                    code: "TOKEN_EXPIRED"
+        
+        '409':
+          description: Conflict - email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                duplicateEmail:
+                  summary: Email already in use by another account
+                  value:
+                    message: "An account with this email already exists"
+                    code: "DUPLICATE_EMAIL"
+                    field: "email"
+        
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  summary: Server error
+                  value:
+                    message: "An error occurred while updating profile"
+                    code: "INTERNAL_ERROR"
+
+components:
+  schemas:
+    User:
+      type: object
+      required:
+        - id
+        - email
+      properties:
+        id:
+          type: string
+          description: Unique user identifier
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        email:
+          type: string
+          format: email
+          description: User's email address
+          example: newemail@example.com
+        name:
+          type: string
+          description: User's display name
+          example: Jane Smith
+        createdAt:
+          type: string
+          format: date-time
+          description: Account creation timestamp (unchanged)
+          example: "2025-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last profile update timestamp (reflects current update)
+          example: "2025-11-20T14:22:00Z"
+    
+    ErrorResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Invalid email address"
+        code:
+          type: string
+          description: Machine-readable error code
+          example: "VALIDATION_ERROR"
+        field:
+          type: string
+          description: Field name for validation errors
+          example: "email"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT token obtained from login or signup endpoint.
+        Include in header as: `Authorization: Bearer <token>`

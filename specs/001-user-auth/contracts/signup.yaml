@@ -1,0 +1,226 @@
+openapi: 3.0.3
+info:
+  title: Authentication API - Signup
+  description: User registration endpoint for creating new accounts
+  version: 1.0.0
+
+paths:
+  /api/auth/signup:
+    post:
+      summary: Create new user account
+      description: |
+        Registers a new user with email and password, then automatically logs them in.
+        
+        **Functional Requirements**:
+        - FR-008: System MUST provide a sign-up page accepting email and password inputs
+        - FR-009: System MUST validate email format before creating an account
+        - FR-010: System MUST prevent duplicate accounts with the same email address
+        - FR-011: System MUST create a new user account upon valid sign-up submission
+        - FR-012: System MUST automatically authenticate users immediately after successful sign-up
+        - FR-013: System MUST redirect users to the Home page after successful sign-up and auto-login
+        
+        **Behavior**:
+        - On success: Creates account and returns JWT token + user object (auto-login)
+        - On duplicate email: Returns 409 conflict error
+        - On validation error: Returns 400 with field-specific errors
+        
+      operationId: signupUser
+      tags:
+        - Authentication
+      
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: User's email address (must be unique)
+                  example: newuser@example.com
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  description: |
+                    User's password with complexity requirements:
+                    - Minimum 8 characters
+                    - At least one uppercase letter
+                    - At least one lowercase letter
+                    - At least one number
+                  example: MySecurePass123!
+                name:
+                  type: string
+                  minLength: 2
+                  description: User's display name (optional)
+                  example: Jane Doe
+            examples:
+              validSignup:
+                summary: Valid signup request
+                value:
+                  email: newuser@example.com
+                  password: MySecurePass123!
+                  name: Jane Doe
+              minimalSignup:
+                summary: Minimal signup (email + password only)
+                value:
+                  email: newuser@example.com
+                  password: MySecurePass123!
+              weakPassword:
+                summary: Weak password (validation error)
+                value:
+                  email: newuser@example.com
+                  password: pass
+      
+      responses:
+        '201':
+          description: Account created successfully and user automatically logged in
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - token
+                  - user
+                properties:
+                  token:
+                    type: string
+                    description: JWT access token for immediate authentication
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  user:
+                    $ref: '#/components/schemas/User'
+                  expiresIn:
+                    type: integer
+                    description: Token expiration time in seconds
+                    example: 3600
+              examples:
+                successfulSignup:
+                  summary: Successful signup and auto-login
+                  value:
+                    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5ODc2NTQzMjEiLCJuYW1lIjoiSmFuZSBEb2UiLCJpYXQiOjE2MzczNzEyMDB9.xyz123
+                    user:
+                      id: "987e6543-e21b-12d3-a456-426614174999"
+                      email: newuser@example.com
+                      name: Jane Doe
+                      createdAt: "2025-11-20T10:30:00Z"
+                      updatedAt: "2025-11-20T10:30:00Z"
+                    expiresIn: 3600
+        
+        '400':
+          description: Bad request - validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                emptyFields:
+                  summary: Empty required fields
+                  value:
+                    message: "Email and password are required"
+                    code: "VALIDATION_ERROR"
+                invalidEmail:
+                  summary: Invalid email format
+                  value:
+                    message: "Please enter a valid email address"
+                    code: "VALIDATION_ERROR"
+                    field: "email"
+                weakPassword:
+                  summary: Password doesn't meet requirements
+                  value:
+                    message: "Password must be at least 8 characters and contain uppercase, lowercase, and number"
+                    code: "VALIDATION_ERROR"
+                    field: "password"
+                shortName:
+                  summary: Name too short
+                  value:
+                    message: "Name must be at least 2 characters"
+                    code: "VALIDATION_ERROR"
+                    field: "name"
+        
+        '409':
+          description: Conflict - email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                duplicateEmail:
+                  summary: Email already registered
+                  value:
+                    message: "An account with this email already exists"
+                    code: "DUPLICATE_EMAIL"
+                    field: "email"
+        
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  summary: Server error
+                  value:
+                    message: "An error occurred while creating your account"
+                    code: "INTERNAL_ERROR"
+
+components:
+  schemas:
+    User:
+      type: object
+      required:
+        - id
+        - email
+      properties:
+        id:
+          type: string
+          description: Unique user identifier
+          example: "987e6543-e21b-12d3-a456-426614174999"
+        email:
+          type: string
+          format: email
+          description: User's email address
+          example: newuser@example.com
+        name:
+          type: string
+          description: User's display name
+          example: Jane Doe
+        createdAt:
+          type: string
+          format: date-time
+          description: Account creation timestamp
+          example: "2025-11-20T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last profile update timestamp
+          example: "2025-11-20T10:30:00Z"
+    
+    ErrorResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Human-readable error message
+          example: "An account with this email already exists"
+        code:
+          type: string
+          description: Machine-readable error code
+          example: "DUPLICATE_EMAIL"
+        field:
+          type: string
+          description: Field name for validation errors
+          example: "email"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

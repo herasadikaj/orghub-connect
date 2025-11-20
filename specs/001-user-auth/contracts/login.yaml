@@ -1,0 +1,196 @@
+openapi: 3.0.3
+info:
+  title: Authentication API - Login
+  description: User login endpoint for email/password authentication
+  version: 1.0.0
+
+paths:
+  /api/auth/login:
+    post:
+      summary: Authenticate user with email and password
+      description: |
+        Validates user credentials and returns a JWT token for authenticated access.
+        
+        **Functional Requirements**:
+        - FR-001: System MUST provide a login page accepting email and password inputs
+        - FR-002: System MUST validate that email and password fields are not empty before processing login
+        - FR-003: System MUST verify user credentials against stored authentication data
+        - FR-004: System MUST redirect authenticated users to the Home page upon successful login
+        - FR-005: System MUST display error message "Invalid email or password" when credentials are incorrect
+        
+        **Behavior**:
+        - On success: Returns JWT token + user object
+        - On invalid credentials: Returns 401 with error message
+        - On validation error: Returns 400 with field-specific errors
+        
+      operationId: loginUser
+      tags:
+        - Authentication
+      
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: User's email address
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  description: User's password (minimum 8 characters)
+                  example: MyPassword123!
+            examples:
+              validLogin:
+                summary: Valid login request
+                value:
+                  email: user@example.com
+                  password: MyPassword123!
+              emptyFields:
+                summary: Empty fields (validation error)
+                value:
+                  email: ""
+                  password: ""
+      
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - token
+                  - user
+                properties:
+                  token:
+                    type: string
+                    description: JWT access token
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  user:
+                    $ref: '#/components/schemas/User'
+                  expiresIn:
+                    type: integer
+                    description: Token expiration time in seconds
+                    example: 3600
+              examples:
+                successfulLogin:
+                  summary: Successful login response
+                  value:
+                    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+                    user:
+                      id: "123e4567-e89b-12d3-a456-426614174000"
+                      email: user@example.com
+                      name: John Doe
+                      createdAt: "2025-01-15T10:30:00Z"
+                      updatedAt: "2025-11-20T08:45:00Z"
+                    expiresIn: 3600
+        
+        '400':
+          description: Bad request - validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                emptyFields:
+                  summary: Empty email or password
+                  value:
+                    message: "Email and password are required"
+                    code: "VALIDATION_ERROR"
+                invalidEmail:
+                  summary: Invalid email format
+                  value:
+                    message: "Invalid email address"
+                    code: "VALIDATION_ERROR"
+                    field: "email"
+        
+        '401':
+          description: Unauthorized - invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidCredentials:
+                  summary: Wrong email or password
+                  value:
+                    message: "Invalid email or password"
+                    code: "INVALID_CREDENTIALS"
+        
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  summary: Server error
+                  value:
+                    message: "An error occurred while processing your request"
+                    code: "INTERNAL_ERROR"
+
+components:
+  schemas:
+    User:
+      type: object
+      required:
+        - id
+        - email
+      properties:
+        id:
+          type: string
+          description: Unique user identifier
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        email:
+          type: string
+          format: email
+          description: User's email address
+          example: user@example.com
+        name:
+          type: string
+          description: User's display name
+          example: John Doe
+        createdAt:
+          type: string
+          format: date-time
+          description: Account creation timestamp
+          example: "2025-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last profile update timestamp
+          example: "2025-11-20T08:45:00Z"
+    
+    ErrorResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Invalid email or password"
+        code:
+          type: string
+          description: Machine-readable error code
+          example: "INVALID_CREDENTIALS"
+        field:
+          type: string
+          description: Field name for validation errors
+          example: "email"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
