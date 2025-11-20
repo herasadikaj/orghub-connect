@@ -7,6 +7,7 @@ export { default as LoginForm } from './components/LoginForm';
 export { default as SignupForm } from './components/SignupForm';
 export { default as ProfileForm } from './components/ProfileForm';
 export { AuthGuard } from './components/AuthGuard';
+export { AuthErrorBoundary } from './components/AuthErrorBoundary';
 export { ProfileButton } from './components/ProfileButton';
 export { useLogin } from './hooks/useLogin';
 export { useSignup } from './hooks/useSignup';

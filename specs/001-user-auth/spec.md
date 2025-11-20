@@ -147,3 +147,40 @@ An authenticated user wants to view their profile information by navigating from
 ### Session 2025-11-20
 
 - Q: What is the base URL for the authentication API? → A: http://10.138.80.113:5000/api
+- Q: What are the actual API endpoints and response format? → A:
+  - Login: POST /auth/login with body `{"email": "user@example.com", "password": "string"}`
+  - Register: POST /auth/register with body `{"email": "user@example.com", "password": "string"}`
+  - Response format: `{"userId": 3, "email": "user@example.com", "token": "JWT_TOKEN"}`
+  - userId is a number, not a string UUID
+
+### CORS Configuration Required (Backend)
+
+**Issue**: Browser is blocking requests due to missing CORS headers from backend server.
+
+**Backend Requirements**:
+1. Add CORS middleware to allow origin: `http://localhost:8081` (and production domain)
+2. Allow methods: `GET, POST, PUT, DELETE, OPTIONS`
+3. Allow headers: `Content-Type, Authorization`
+4. Allow credentials: `true`
+5. Handle preflight OPTIONS requests
+
+**Example Backend Configuration** (ASP.NET Core):
+```csharp
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:8081", "http://10.129.4.11:8081")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
+
+app.UseCors("AllowFrontend");
+```
+
+**DTO Verification**:
+- Backend DTO must accept `email` field (not `username`)
+- JSON property names must match exactly: `email`, `password`
+- Authentication logic should validate against `email` field

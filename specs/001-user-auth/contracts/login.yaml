@@ -5,7 +5,7 @@ info:
   version: 1.0.0
 
 paths:
-  /api/auth/login:
+  /auth/login:
     post:
       summary: Authenticate user with email and password
       description: |
@@ -68,31 +68,30 @@ paths:
               schema:
                 type: object
                 required:
+                  - userId
+                  - email
                   - token
-                  - user
                 properties:
+                  userId:
+                    type: integer
+                    description: Unique user identifier
+                    example: 3
+                  email:
+                    type: string
+                    format: email
+                    description: User's email address
+                    example: user@example.com
                   token:
                     type: string
                     description: JWT access token
                     example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-                  user:
-                    $ref: '#/components/schemas/User'
-                  expiresIn:
-                    type: integer
-                    description: Token expiration time in seconds
-                    example: 3600
               examples:
                 successfulLogin:
                   summary: Successful login response
                   value:
-                    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
-                    user:
-                      id: "123e4567-e89b-12d3-a456-426614174000"
-                      email: user@example.com
-                      name: John Doe
-                      createdAt: "2025-01-15T10:30:00Z"
-                      updatedAt: "2025-11-20T08:45:00Z"
-                    expiresIn: 3600
+                    userId: 3
+                    email: user@example.com
+                    token: eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjQyMDIwMzcsImlhdCI6MTc2MzU5NzIzNywiVXNlcklkIjoiMyIsIkVtYWlsIjoiZXJhbGRhc2hlaHUzQGdtYWlsLmNvbSIsIm5iZiI6MTc2MzU5NzIzN30.DJbtRZoZiPqyQDpv9OT92PR3qxclcqRCY_uwUuYQHAU
         
         '400':
           description: Bad request - validation error
@@ -144,13 +143,13 @@ components:
     User:
       type: object
       required:
-        - id
+        - userId
         - email
       properties:
-        id:
-          type: string
+        userId:
+          type: integer
           description: Unique user identifier
-          example: "123e4567-e89b-12d3-a456-426614174000"
+          example: 3
         email:
           type: string
           format: email
@@ -160,16 +159,6 @@ components:
           type: string
           description: User's display name
           example: John Doe
-        createdAt:
-          type: string
-          format: date-time
-          description: Account creation timestamp
-          example: "2025-01-15T10:30:00Z"
-        updatedAt:
-          type: string
-          format: date-time
-          description: Last profile update timestamp
-          example: "2025-11-20T08:45:00Z"
     
     ErrorResponse:
       type: object

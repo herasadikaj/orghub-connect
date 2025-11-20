@@ -73,7 +73,7 @@ export default function Profile() {
                         <div className="space-y-4">
                             <div className="flex flex-col gap-1">
                                 <span className="text-sm font-medium text-muted-foreground">User ID</span>
-                                <span className="text-sm font-mono">{user.id}</span>
+                                <span className="text-sm font-mono">{user.userId}</span>
                             </div>
                             <div className="flex flex-col gap-1">
                                 <span className="text-sm font-medium text-muted-foreground">Current Email</span>

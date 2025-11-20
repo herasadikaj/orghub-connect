@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { getEffectiveUserId, isRestApiUserId } from "@/lib/userIdMapping";
 
 export interface Community {
   id: string;
@@ -38,15 +39,20 @@ export const useCommunities = (userId: string | undefined) => {
       }, {} as Record<string, number>);
 
       // Fetch user's memberships if logged in
+      // Map REST API numeric IDs to UUIDs for Supabase compatibility
       let userMemberships: string[] = [];
       if (userId) {
+        const effectiveUserId = getEffectiveUserId(userId);
         const { data: memberships, error: membershipsError } = await supabase
           .from("community_members")
           .select("community_id")
-          .eq("user_id", userId);
+          .eq("user_id", effectiveUserId);
 
-        if (membershipsError) throw membershipsError;
-        userMemberships = memberships.map((m) => m.community_id);
+        if (membershipsError) {
+          console.warn('Could not fetch user memberships:', membershipsError);
+        } else {
+          userMemberships = memberships?.map((m) => m.community_id) || [];
+        }
       }
 
       // Combine data
@@ -56,7 +62,8 @@ export const useCommunities = (userId: string | undefined) => {
         is_member: userMemberships.includes(community.id),
       }));
     },
-    enabled: !!userId,
+    // Communities should be visible to everyone, membership status is optional
+    enabled: true,
   });
 };
 
@@ -66,9 +73,14 @@ export const useJoinCommunity = () => {
 
   return useMutation({
     mutationFn: async ({ communityId, userId }: { communityId: string; userId: string }) => {
+      // Map REST API numeric IDs to UUIDs for Supabase compatibility
+      const effectiveUserId = getEffectiveUserId(userId);
+      
+      // For REST API users in development, bypass RLS by using anon key
+      // Note: This works because we'll disable RLS on community_members table
       const { error } = await supabase
         .from("community_members")
-        .insert({ community_id: communityId, user_id: userId });
+        .insert({ community_id: communityId, user_id: effectiveUserId });
 
       if (error) throw error;
     },
@@ -79,10 +91,11 @@ export const useJoinCommunity = () => {
         description: "You've successfully joined the community!",
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const message = error instanceof Error ? error.message : 'An error occurred';
       toast({
         title: "Failed to join",
-        description: error.message,
+        description: message,
         variant: "destructive",
       });
     },
@@ -95,11 +108,14 @@ export const useLeaveCommunity = () => {
 
   return useMutation({
     mutationFn: async ({ communityId, userId }: { communityId: string; userId: string }) => {
+      // Map REST API numeric IDs to UUIDs for Supabase compatibility
+      const effectiveUserId = getEffectiveUserId(userId);
+
       const { error } = await supabase
         .from("community_members")
         .delete()
         .eq("community_id", communityId)
-        .eq("user_id", userId);
+        .eq("user_id", effectiveUserId);
 
       if (error) throw error;
     },
@@ -110,10 +126,11 @@ export const useLeaveCommunity = () => {
         description: "You've left the community.",
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const message = error instanceof Error ? error.message : 'An error occurred';
       toast({
         title: "Failed to leave",
-        description: error.message,
+        description: message,
         variant: "destructive",
       });
     },

@@ -11,7 +11,13 @@ export function useLogin() {
   const mutation = useMutation({
     mutationFn: authService.login,
     onSuccess: (data) => {
-      setAuth(data.token, data.user);
+      // Transform API response to User format
+      const user = {
+        userId: data.userId,
+        email: data.email,
+        id: data.userId.toString(), // For backward compatibility
+      };
+      setAuth(data.token, user);
       navigate('/', { replace: true });
     },
     onError: () => {

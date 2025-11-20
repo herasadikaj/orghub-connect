@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 // User schema
 export const userSchema = z.object({
-  id: z.string(),
+  userId: z.number(),
   email: z.string().email('Invalid email address'),
   name: z.string().optional(),
   createdAt: z.string().datetime().optional(),
@@ -11,11 +11,14 @@ export const userSchema = z.object({
 
 export type User = z.infer<typeof userSchema>;
 
-// Auth response schema
+// Legacy id field for backward compatibility
+export type UserWithId = User & { id: string };
+
+// Auth response schema - matches actual API response
 export const authResponseSchema = z.object({
+  userId: z.number(),
+  email: z.string().email(),
   token: z.string().min(1),
-  user: userSchema,
-  expiresIn: z.number().optional(),
 });
 
 export type AuthResponse = z.infer<typeof authResponseSchema>;

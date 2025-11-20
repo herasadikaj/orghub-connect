@@ -12,7 +12,7 @@ const Index = () => {
   const user = useAuthStore((state) => state.user);
   const logout = useLogout();
 
-  const { data: communities, isLoading: communitiesLoading } = useCommunities(user?.id);
+  const { data: communities, isLoading: communitiesLoading } = useCommunities(user?.userId?.toString());
 
   const handleLogout = () => {
     logout();
@@ -152,7 +152,7 @@ const Index = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
               {communities?.map((community) => (
-                <CommunityCard key={community.id} community={community} userId={user.id} />
+                <CommunityCard key={community.id} community={community} userId={user?.userId?.toString() || ''} />
               ))}
             </div>
           </TabsContent>

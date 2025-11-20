@@ -24,7 +24,7 @@ Implement a complete user authentication system with login, sign-up, and profile
 
 **Storage**: 
 - JWT tokens in Zustand store + localStorage
-- API base URL: empty string (relative paths)
+- API base URL: http://10.138.80.113:5000/api
 - User profile data fetched from REST API
 
 **Testing**: None (per constitution: no test files)  
@@ -38,8 +38,10 @@ Implement a complete user authentication system with login, sign-up, and profile
 
 **Constraints**: 
 - Must work with REST API (not Supabase)
-- Empty string base URL for API endpoints
+- API base URL: http://10.138.80.113:5000/api
 - JWT token-based authentication
+- All API requests use Content-Type: application/json
+- Protected endpoints require Authorization: Bearer {token} header
 - Client-side session persistence
 - No test files
 
@@ -246,24 +248,30 @@ Defined entities and interfaces:
 
 Created OpenAPI 3.0 specifications for all endpoints:
 
-1. **POST /api/auth/login** ([login.yaml](./contracts/login.yaml))
-   - Accepts: email, password
-   - Returns: token, user, expiresIn
+1. **POST /auth/login** ([login.yaml](./contracts/login.yaml))
+   - Method: POST
+   - Headers: `Content-Type: application/json`
+   - Body: `{"email": "user@example.com", "password": "string"}`
+   - Returns: `{"userId": 3, "email": "user@example.com", "token": "JWT_TOKEN"}`
    - Errors: 400 (validation), 401 (invalid credentials), 500 (server)
 
-2. **POST /api/auth/signup** ([signup.yaml](./contracts/signup.yaml))
-   - Accepts: email, password, optional name
-   - Returns: token, user (auto-login)
+2. **POST /auth/register** ([signup.yaml](./contracts/signup.yaml))
+   - Method: POST
+   - Headers: `Content-Type: application/json`
+   - Body: `{"email": "user@example.com", "password": "string"}`
+   - Returns: `{"userId": 3, "email": "user@example.com", "token": "JWT_TOKEN"}`
    - Errors: 400 (validation), 409 (duplicate email), 500 (server)
 
 3. **GET /api/profile** ([get-profile.yaml](./contracts/get-profile.yaml))
-   - Requires: Bearer token in Authorization header
+   - Method: GET
+   - Headers: `Authorization: Bearer {token}`
    - Returns: user profile
    - Errors: 401 (unauthorized), 404 (not found), 500 (server)
 
 4. **PUT /api/profile** ([update-profile.yaml](./contracts/update-profile.yaml))
-   - Requires: Bearer token in Authorization header
-   - Accepts: optional name and/or email
+   - Method: PUT
+   - Headers: `Authorization: Bearer {token}`, `Content-Type: application/json`
+   - Body: optional `{"name": "string", "email": "string"}`
    - Returns: updated user profile
    - Errors: 400 (validation), 401 (unauthorized), 409 (duplicate email), 500 (server)
 

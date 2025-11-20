@@ -338,18 +338,26 @@ export function useLogin() {
 
 **Question**: How should the API base URL be configured?
 
-**Decision**: Use empty string as base URL (relative paths)
+**Decision**: Use absolute URL http://10.138.80.113:5000/api
 
 **Rationale**:
-- User requirement: "base url leave it as empty string"
-- API hosted on same domain as frontend
-- Simplifies deployment (no CORS issues)
-- Relative paths work in all environments
+- User clarification: API is hosted at http://10.138.80.113:5000/api
+- External API server requires absolute URL
+- Need CORS headers from backend
+- Single configuration point for all API calls
 
 **Alternatives Considered**:
-- Environment variables: Adds complexity
-- Absolute URLs: Requires CORS configuration
-- Proxy in development: Vite already handles this
+- Empty string (relative paths): Only works for same-domain APIs
+- Environment variables: Adds complexity, but better for multiple environments
+- Proxy in development: Doesn't solve production deployment
+
+**API Contract Details**:
+- Base URL: http://10.138.80.113:5000/api
+- Login endpoint: POST /auth/login
+- Register endpoint: POST /auth/register
+- All requests require: `Content-Type: application/json` header
+- Protected endpoints require: `Authorization: Bearer {token}` header
+- Response format: `{userId: number, email: string, token: string}`
 
 **Implementation Pattern**:
 ```typescript
@@ -357,17 +365,27 @@ export function useLogin() {
 import axios from 'axios';
 
 export const apiClient = axios.create({
-  baseURL: '', // Empty string as requested
+  baseURL: 'http://10.138.80.113:5000/api',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
+// Request interceptor adds auth token
+apiClient.interceptors.request.use((config) => {
+  const token = useAuthStore.getState().token;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 // Usage in services
 export const authService = {
   login: async (credentials: LoginInput) => {
-    const { data } = await apiClient.post('/api/auth/login', credentials);
+    // Full URL: http://10.138.80.113:5000/api/auth/login
+    const { data } = await apiClient.post('/auth/login', credentials);
     return data;
   },
 };
@@ -476,7 +494,7 @@ function LoginForm() {
 | **Token Storage** | Zustand + localStorage | Reactive + persistent |
 | **Error Handling** | Service throws, hooks expose, components display | Clear separation of concerns |
 | **Navigation** | React Router useNavigate | Programmatic with replace option |
-| **API Base URL** | Empty string (relative paths) | User requirement, same-domain hosting |
+| **API Base URL** | http://10.138.80.113:5000/api | External API server, POST /auth/login and /auth/register |
 | **Profile Editing** | React Hook Form + optimistic updates | Better UX, automatic rollback on error |
 | **Loading States** | React Query + disabled inputs | Built-in, prevents duplicate submissions |
 
